@@ -17,6 +17,6 @@ class TeacherViewset(viewsets.ModelViewSet):
     search_fields = ['user__first_name', 'user__email', 'Catagory__name']
     
 class ReviewViewset(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     queryset = models.Review.objects.all()
     serializer_class = serializers.ReviewSerializer

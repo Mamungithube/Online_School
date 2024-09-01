@@ -5,7 +5,7 @@ from . import models
 from . import serializers
 from rest_framework.permissions import IsAuthenticated
 class CourseViewset(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     queryset = models.Course.objects.all()
     serializer_class = serializers.CourseSerializer
     filter_backends = [filters.SearchFilter]
