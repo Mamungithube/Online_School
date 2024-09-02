@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'Teacher',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
 ]
 CSRF_TRUSTED_ORIGINS = ['https://online-school-k56h.onrender.com','https://*.127.0.0.1']
 REST_FRAMEWORK = {
@@ -56,6 +57,8 @@ REST_FRAMEWORK = {
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -66,6 +69,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'Online_School.urls'
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 TEMPLATES = [
