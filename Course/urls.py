@@ -1,9 +1,9 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from . import views
-router = DefaultRouter() # amader router
+router = DefaultRouter() 
 
-router.register('list/', views.CourseViewset) # router er antena
+router.register('list/', views.CourseViewset)
 urlpatterns = [
     path('', include(router.urls)),
 ]
