@@ -16,4 +16,9 @@ class CatagorySerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Review
-        fields = '__all__'
+        fields = ['id', 'body', 'created', 'rating', 'reviewer', 'course']
+    def get_reviewer_name(self, obj):
+        return obj.reviewer.username  # Or obj.reviewer.get_full_name() if you want the full name
+
+    def get_course_name(self, obj):
+        return obj.course.title
