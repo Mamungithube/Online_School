@@ -54,6 +54,10 @@ REST_FRAMEWORK = {
     'rest_framework.permissions.AllowAny',
     ],
 }
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5500",
+    # Add other origins you want to allow
+]
 
 
 MIDDLEWARE = [
