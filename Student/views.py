@@ -5,42 +5,118 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from django.core.mail import EmailMultiAlternatives
 from rest_framework.response import Response
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
+from rest_framework import status
 
 from . import models
 from . import serializers
 
+from django.contrib.auth.hashers import check_password
+
+from Course.models import CustomUser  # Import your CustomUser model
 class StudentViewset(viewsets.ModelViewSet):
     queryset = models.Student.objects.all()
     serializer_class = serializers.StudentSerializer
 
-class UserRegistrationApiView(APIView):
-    serializer_class = serializers.RegistrationSerializer
+# class UserRegistrationApiView(APIView):
+#     serializer_class = serializers.RegistrationSerializer
     
+#     def post(self, request):
+#         serializer = self.serializer_class(data=request.data)
+        
+#         if serializer.is_valid():
+#             user = serializer.save()
+#             print(user)
+#             token = default_token_generator.make_token(user)
+#             print("token ", token)
+#             uid = urlsafe_base64_encode(force_bytes(user.pk))
+#             print("uid ", uid)
+#             confirm_link = f"http://127.0.0.1:8000/Student/active/{uid}/{token}"
+#             email_subject = "Confirm Your Email"
+#             email_body = render_to_string('confirm_email.html', {'confirm_link' : confirm_link})
+            
+#             email = EmailMultiAlternatives(email_subject , '', to=[user.email])
+#             email.attach_alternative(email_body, "text/html")
+#             email.send()
+#             return Response("Check your mail for confirmation")
+#         return Response(serializer.errors)
+
+
+# def activate(request, uid64, token):
+#     try:
+#         uid = urlsafe_base64_decode(uid64).decode()
+#         user = User._default_manager.get(pk=uid)
+#     except(User.DoesNotExist):
+#         user = None 
+    
+#     if user is not None and default_token_generator.check_token(user, token):
+#         user.is_active = True
+#         user.save()
+#         return redirect('login')
+#     else:
+#         return redirect('register')
+    
+
+# class UserLoginApiView(APIView):
+#     def post(self, request):
+#         serializer = serializers.UserLoginSerializer(data=request.data)
+#         if serializer.is_valid():
+#             username = serializer.validated_data['username']
+#             password = serializer.validated_data['password']
+#             user = authenticate(username=username, password=password)
+            
+#             if user:
+#                 token, _ = Token.objects.get_or_create(user=user)
+#                 return Response({'token': token.key, 'user_id': user.id})
+#             else:
+#                 return Response({'error': 'Invalid credentials'}, status=400)
+#         return Response(serializer.errors, status=400)
+
+# class UserLogoutView(APIView):
+#     def post(self, request):
+#         if request.user.is_authenticated:
+#             request.user.auth_token.delete()  # Delete the user's token to log them out
+#             return Response({"message": "Successfully logged out"}, status=200)
+#         return Response({"error": "User is not authenticated"}, status=400)
+
+
+
+class RegisteredUsersCount(APIView):
+   
+    def get(self, request):
+        users_count = User.objects.count()  # Count all users in the database
+        return Response({"registered_users": users_count})
+
+
+
+
+class UserRegistrationAPIView(APIView):
+    serializer_class = serializers.RegistrationSerializer
+    permission_classes = [AllowAny] 
+
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
-        
         if serializer.is_valid():
             user = serializer.save()
-            print(user)
             token = default_token_generator.make_token(user)
-            print("token ", token)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            print("uid ", uid)
             confirm_link = f"http://127.0.0.1:8000/Student/active/{uid}/{token}"
-            email_subject = "Confirm Your Email"
-            email_body = render_to_string('confirm_email.html', {'confirm_link' : confirm_link})
-            
-            email = EmailMultiAlternatives(email_subject , '', to=[user.email])
+            email_subject = "Confirm your email"
+            email_body = render_to_string('confirm_email.html', {'confirm_link': confirm_link})
+            email = EmailMultiAlternatives(email_subject, '', to=[user.email])
             email.attach_alternative(email_body, "text/html")
             email.send()
-            return Response("Check your mail for confirmation")
-        return Response(serializer.errors)
+            return Response("Check your mail for confirmation", status=201)
+        return Response(serializer.errors, status=400)
+
+
 
 
 def activate(request, uid64, token):
@@ -48,37 +124,93 @@ def activate(request, uid64, token):
         uid = urlsafe_base64_decode(uid64).decode()
         user = User._default_manager.get(pk=uid)
     except(User.DoesNotExist):
-        user = None 
-    
+        user = None
+
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        return redirect('login')
+        return redirect("http://127.0.0.1:8000/Student/login/")
     else:
-        return redirect('register')
-    
+        return redirect("http://127.0.0.1:8000/Student/register/")
+
+
+
+
+
 
 class UserLoginApiView(APIView):
+    permission_classes = [AllowAny]
+    
     def post(self, request):
-        serializer = serializers.UserLoginSerializer(data = self.request.data)
+        serializer = serializers.UserLoginSerializer(data=request.data)
         if serializer.is_valid():
             username = serializer.validated_data['username']
             password = serializer.validated_data['password']
-
-            user = authenticate(username= username, password=password)
             
+            try:
+                # Use CustomUser instead of User
+                user = CustomUser.objects.get(username=username)
+            except CustomUser.DoesNotExist:
+                return Response({"error": "User not found"}, status=400)
+            
+            if not user.check_password(password):
+                return Response({"error": "Incorrect password"}, status=400)
+            
+            # Now, attempt authentication
+            user = authenticate(username=username, password=password)
             if user:
-                token,_ = Token.objects.get_or_create(user=user)
-                print(token)
-                print(_)
+                token, _ = Token.objects.get_or_create(user=user)
                 login(request, user)
-                return Response({'token' : token.key, 'user_id' : user.id})
+                return Response({"token": token.key, 'user_id': user.id, 'user_role': user.user_role}, status=200)
             else:
-                return Response({'error' : "Invalid Credential"})
-        return Response(serializer.errors)
+                return Response({"error": "Authentication failed"}, status=400)
+        return Response(serializer.errors, status=400)
 
-class UserLogoutView(APIView):
+
+
+class UserLogoutApiView(APIView):
     def get(self, request):
         request.user.auth_token.delete()
         logout(request)
         return redirect('login')
+
+
+
+class ChangePasswordAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        
+        user = request.user
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+
+        if not user.check_password(old_password):
+            return Response({'error': 'Old password is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not new_password:
+            return Response({'error': 'New password is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Password changed successfully'}, status=200)
+
+
+
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk, format=None):
+        user = get_object_or_404(models.CustomUser, pk=pk)
+        serializer = serializers.UserSerializer(user)
+        return Response(serializer.data)
+    
+
+    def put(self, request, pk, format=None):
+        user = get_object_or_404(models.CustomUser, pk=pk)
+        serializer = serializers.UserSerializer(user, data=request.data, partial=True)  # partial=True allows for partial updates
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
