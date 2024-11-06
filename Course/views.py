@@ -8,12 +8,19 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.http import Http404
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+
+
 class CourseViewset(viewsets.ModelViewSet):
-    # permission_classes = [IsAuthenticated]
     queryset = models.Course.objects.all()
     serializer_class = serializers.CourseSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['Catagory__name']
+    parser_classes = [MultiPartParser, FormParser]  # Added to handle file uploads
+
+    def create(self, request, *args, **kwargs):
+        print(request.data)  # Log incoming data
+        return super().create(request, *args, **kwargs)
 
 class CourseDetail(APIView):
     def get_object(self, pk):

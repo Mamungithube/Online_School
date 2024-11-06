@@ -88,6 +88,7 @@ class UserLoginApiView(APIView):
 
                 token,_ = Token.objects.get_or_create(user=user)
                 login(request, user)
+                print(token.key)
                 return Response({"token": token.key, 'user_id': user.id}, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "Authentication failed"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -103,8 +104,6 @@ class UserLogoutApiView(APIView):
         
         logout(request)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
 
 class ChangePasswordAPIView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
