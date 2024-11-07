@@ -14,6 +14,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from . import models
 from . import serializers
@@ -105,26 +106,23 @@ class UserLogoutApiView(APIView):
         logout(request)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class ChangePasswordAPIView(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+class ChangePasswordViewSet(viewsets.GenericViewSet):
+    serializer_class = serializers.ChangePasswordSerializer
+    model = User
 
-    def post(self, request):
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            user = request.user
+            if not user.check_password(serializer.validated_data['old_password']):
+                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
         
-        user = request.user
-        old_password = request.data.get('old_password')
-        new_password = request.data.get('new_password')
-
-        if not user.check_password(old_password):
-            return Response({'error': 'Old password is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not new_password:
-            return Response({'error': 'New password is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        user.set_password(new_password)
-        user.save()
-        return Response({'message': 'Password changed successfully'}, status=200)
-
-
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserProfileView(APIView):
@@ -143,3 +141,16 @@ class UserProfileView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+
+
+class IsAdminStatusAPIView(APIView):
+    parser_classes = [IsAuthenticatedOrReadOnly]
+    
+    def get(self, request):
+        user = request.user
+        if user.is_staff:
+            return Response({"is_admin" : True})
+        return Response({"is_admin" : False})

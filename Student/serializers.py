@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from . import models
 from django.contrib.auth.models import User
+from django.contrib.auth import password_validation
 
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,3 +37,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField(required = True)
     password = serializers.CharField(required = True)
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+
+    def validate_new_password(self, value):
+        password_validation.validate_password(value, self.context['request'].user)
+        return value
