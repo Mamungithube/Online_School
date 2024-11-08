@@ -9,7 +9,7 @@ from rest_framework import status
 from django.http import Http404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
-
+from rest_framework.exceptions import ValidationError
 
 class CourseViewset(viewsets.ModelViewSet):
     queryset = models.Course.objects.all()
@@ -46,3 +46,25 @@ class CourseDetail(APIView):
         flower = self.get_object(pk)
         flower.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+class EnrolledCoursesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        enrollments = models.Enrollment.objects.filter(user=request.user)
+        serializer = serializers.EnrollmentSerializer(enrollments, many=True)
+        return Response(serializer.data)
+    def post(self, request):
+        # Handle course enrollment (example, you may need additional logic for validation)
+        course_id = request.data.get('course_id')
+        if not course_id:
+            return Response({'detail': 'Course ID is required.'}, status=400)
+        
+        try:
+            course = models.Course.objects.get(id=course_id)
+            enrollment = models.Enrollment.objects.create(user=request.user, course=course)
+            serializer = serializers.EnrollmentSerializer(enrollment)
+            return Response(serializer.data, status=201)
+        except models.Course.DoesNotExist:
+            return Response({'detail': 'Course not found.'}, status=404)

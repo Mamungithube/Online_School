@@ -93,7 +93,6 @@ class UserLoginApiView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class UserLogoutApiView(APIView):
     def get(self, request):
         user = request.user

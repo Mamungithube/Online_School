@@ -13,3 +13,4 @@ class StudentAdmin(admin.ModelAdmin):
     
     
 admin.site.register(models.Student, StudentAdmin)
+admin.site.register(models.CustomUser)
