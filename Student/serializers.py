@@ -45,3 +45,12 @@ class ChangePasswordSerializer(serializers.Serializer):
     def validate_new_password(self, value):
         password_validation.validate_password(value, self.context['request'].user)
         return value
+    
+# serializers.py
+from rest_framework import serializers
+from .models import CustomUser
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = '__all__'

@@ -19,9 +19,6 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from . import models
 from . import serializers
 
-from django.contrib.auth.hashers import check_password
-
-from Course.models import CustomUser  # Import your CustomUser model
 class StudentViewset(viewsets.ModelViewSet):
     queryset = models.Student.objects.all()
     serializer_class = serializers.StudentSerializer
@@ -126,17 +123,15 @@ class ChangePasswordViewSet(viewsets.GenericViewSet):
 
 
 class UserProfileView(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def get(self, request, pk, format=None):
-        user = get_object_or_404(models.CustomUser, pk=pk)
-        serializer = serializers.UserSerializer(user)
+    def get(self, request):
+        user = request.user
+        serializer = serializers.CustomUserSerializer(user)
         return Response(serializer.data)
-    
 
-    def put(self, request, pk, format=None):
-        user = get_object_or_404(models.CustomUser, pk=pk)
-        serializer = serializers.UserSerializer(user, data=request.data, partial=True)  # partial=True allows for partial updates
+    def put(self, request):
+        user = request.user 
+        serializer = serializers.CustomUserSerializer(user, data=request.data, partial=True)  # partial=True allows partial updates
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
