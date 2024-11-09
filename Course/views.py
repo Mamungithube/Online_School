@@ -21,6 +21,7 @@ class CourseViewset(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         print(request.data)  # Log incoming data
         return super().create(request, *args, **kwargs)
+    
 
 class CourseDetail(APIView):
     def get_object(self, pk):
@@ -57,7 +58,8 @@ class EnrolledCoursesView(APIView):
         return Response(serializer.data)
     def post(self, request):
         # Handle course enrollment (example, you may need additional logic for validation)
-        course_id = request.data.get('course_id')
+        course_id = request.data.get('course')
+        print(course_id)
         if not course_id:
             return Response({'detail': 'Course ID is required.'}, status=400)
         

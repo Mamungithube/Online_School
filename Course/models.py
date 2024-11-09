@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 class Course(models.Model):
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=50)
     description = models.TextField()
     image = models.ImageField(upload_to="Course/images/" , blank=True, null=True)
     month = models.IntegerField()
@@ -16,8 +16,7 @@ class Enrollment(models.Model):
     enrolled_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'course')  # Prevents duplicate enrollments
-
+        unique_together = ('user', 'course')  
     def __str__(self):
         return f"{self.user.username} enrolled in {self.course.name}"
 
