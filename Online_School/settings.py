@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-a36iq)q-0n3la74@dqs6s@tq=cz&4g)khkhq-n4=5%pf!6i)-q'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
 ]
-CSRF_TRUSTED_ORIGINS = ['https://online-school-k56h.onrender.com','https://*.127.0.0.1']
+# CSRF_TRUSTED_ORIGINS = ['https://online-school-k56h.onrender.com','https://*.127.0.0.1']
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_PERMISSION_CLASSES': [

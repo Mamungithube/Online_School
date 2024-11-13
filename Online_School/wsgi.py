@@ -15,4 +15,4 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Online_School.settings')
 
 application = get_wsgi_application()
 
-APP = application
+app = application

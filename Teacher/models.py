@@ -29,7 +29,7 @@ STAR_CHOICES = [
     ('⭐⭐⭐⭐⭐', '⭐⭐⭐⭐⭐'),
 ]
 class Review(models.Model):
-    reviewer = models.ForeignKey(Student, on_delete = models.CASCADE)
+    reviewer = models.ForeignKey(User, on_delete = models.CASCADE)
     Course = models.ForeignKey(Course, on_delete = models.CASCADE)
     body = models.TextField()
     created = models.DateTimeField(auto_now_add = True)
