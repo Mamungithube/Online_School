@@ -9,5 +9,9 @@
         "src": "/(.*)",
         "dest": "Online_School/wsgi.py"
       }
+    ],
+    "rewrites": [
+      { "source": "/(.*)", "destination": "/" }
     ]
 }
+
