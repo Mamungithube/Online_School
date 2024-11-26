@@ -10,17 +10,50 @@ from django.http import Http404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.exceptions import ValidationError
+from rest_framework import viewsets, status, filters
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
+from django.http import Http404
+from . import models, serializers
 
 class CourseViewset(viewsets.ModelViewSet):
     queryset = models.Course.objects.all()
     serializer_class = serializers.CourseSerializer
     filter_backends = [filters.SearchFilter]
-    search_fields = ['Catagory__name']
-    parser_classes = [MultiPartParser, FormParser]  # Added to handle file uploads
+    search_fields = ['Catagory__name']  # Search by related category name
+    parser_classes = [MultiPartParser, FormParser]  # Handle file uploads
+
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        try:
+            course = self.get_object()
+        except Http404:
+            return Response({"error": "Course not found."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(course)
+        return Response(serializer.data)
+
+    def update(self, request, pk=None, *args, **kwargs):
+        try:
+            course = self.get_object()
+        except Http404:
+            return Response({"error": "Course not found."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(course, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None, *args, **kwargs):
+        try:
+            course = self.get_object()
+        except Http404:
+            return Response({"error": "Course not found."}, status=status.HTTP_404_NOT_FOUND)
+        course.delete()
+        return Response({"message": "Course deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
     def create(self, request, *args, **kwargs):
-        print(request.data)  # Log incoming data
+        print(request.data)
         return super().create(request, *args, **kwargs)
+
     
 
 class CourseDetail(APIView):

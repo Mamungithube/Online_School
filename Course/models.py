@@ -6,7 +6,7 @@ class Course(models.Model):
     image = models.ImageField(upload_to="Course/images/" , blank=True, null=True)
     month = models.IntegerField()
     Course_fee = models.IntegerField()
-
+    
     def __str__(self):
         return self.name
 
