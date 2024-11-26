@@ -1,24 +1,13 @@
 {
-  "builds": [
-    {
+    "builds": [{
       "src": "Online_School/wsgi.py",
       "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "15mb",
-        "runtime": "python3.11"
+      "config": { "maxLambdaSize": "15mb", "runtime": "python3.11.3" }
+    }],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "Online_School/wsgi.py"
       }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "Online_School/wsgi.py"
-    }
-  ]
+    ]
 }
-
-
